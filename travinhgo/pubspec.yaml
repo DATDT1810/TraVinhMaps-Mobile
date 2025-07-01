@@ -94,6 +94,7 @@ flutter:
       - assets/images/sample/
       - assets/images/markers/
       - assets/images/profile/
+      - assets/images/home/
       - .env
       - assets/geo/travinh.json
       - assets/geo/vietnam-provinces.json

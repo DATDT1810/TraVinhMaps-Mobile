@@ -14,6 +14,7 @@ import 'package:travinhgo/router/app_router.dart';
 import 'package:travinhgo/providers/destination_type_provider.dart';
 import 'package:travinhgo/providers/marker_provider.dart';
 import 'package:travinhgo/providers/tag_provider.dart';
+import 'package:travinhgo/services/push_notification_service.dart';
 import 'package:travinhgo/utils/env_config.dart';
 import 'dart:developer' as developer;
 import 'package:flutter/services.dart';
@@ -27,7 +28,8 @@ import 'firebase_options.dart';
 // Global navigator key for accessing navigation from anywhere
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-final PushNotificationService pushNotificationService = PushNotificationService();
+final PushNotificationService pushNotificationService =
+    PushNotificationService();
 
 // Global flag to track if splash screen has been shown
 bool hasShownSplashScreen = false;

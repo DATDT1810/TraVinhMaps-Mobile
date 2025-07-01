@@ -23,7 +23,14 @@ class CategoryItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> screen = const [IntroductionPage(), DestinationScreen(), LocalSpecialtyScreen(), EventFestivalScreen(), OcopProductScreen(), MessageScreen()];
+    List<Widget> screen = const [
+      IntroductionPage(),
+      DestinationScreen(),
+      LocalSpecialtyScreen(),
+      EventFestivalScreen(),
+      OcopProductScreen(),
+      MessageScreen()
+    ];
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -44,7 +51,7 @@ class CategoryItem extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(15.0),
               child: Image.asset(
-                "assets/images/navigations/$iconName.png",
+                "assets/images/home/$iconName.png",
                 fit: BoxFit.contain,
               ),
             ),
