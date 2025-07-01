@@ -306,8 +306,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           icon: Icons.chat_bubble_outline,
           title: 'Feedback',
           onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Feedback feature coming soon')),
+            context.pushNamed(
+              'Feedback',
             );
           },
         ),

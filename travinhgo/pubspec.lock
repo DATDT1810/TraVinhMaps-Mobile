@@ -574,7 +574,7 @@ packages:
       path: "plugins/here_sdk"
       relative: true
     source: path
-    version: "4.22.5"
+    version: "4.22.4"
   html:
     dependency: transitive
     description:

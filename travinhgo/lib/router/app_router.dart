@@ -14,6 +14,7 @@ import 'package:travinhgo/utils/router_logger.dart';
 import '../main.dart';
 import '../screens/destination/destination_detail_screen.dart';
 import '../screens/event_festival/event_fesftival_detail_screen.dart';
+import '../screens/feedback/feedback_form_screen.dart';
 import '../screens/local_specialty/local_specialty_detail_screen.dart';
 import '../screens/ocop_product/ocop_product_detail_screen.dart';
 import '../screens/map/map_screen.dart';
@@ -125,8 +126,8 @@ class AppRouter {
     restorationScopeId: 'app',
     routerNeglect: true,
     // CRITICAL FIX: Add configuration to prevent route rebuilding during external auth flows
-    requestFocus:
-        false, // Prevent automatic focus requests that might trigger navigation
+    requestFocus: false,
+    // Prevent automatic focus requests that might trigger navigation
     // ENHANCEMENT: Add specialized observer for Google sign-in
     observers: [
       RouterLogger(
@@ -223,6 +224,11 @@ class AppRouter {
         path: '/notification',
         name: 'Notification',
         builder: (context, state) => MessageScreen(),
+      ),
+      GoRoute(
+        path: '/feedback',
+        name: 'Feedback',
+        builder: (context, state) => FeedbackFormScreen(),
       ),
       GoRoute(
         path: '/tourist-destination-detail/:id',

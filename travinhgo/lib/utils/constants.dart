@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'env_config.dart';
 
 const kcontentColor = Color(0xffF5F5F5);
+const kbackgroundColor = Colors.white;
 const kprimaryColor = Color(0xff158247);
 const kSearchBackgroundColor = Color(0xffeeeeee);
 const kpriceColor = Color(0xffF94F43);
