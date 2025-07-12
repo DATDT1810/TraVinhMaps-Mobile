@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:travinhgo/models/destination/destination.dart';
 
 import '../utils/env_config.dart';
+import 'dart:developer' as developer;
 
 class DestinationService {
   static final DestinationService _instance = DestinationService._internal();
@@ -32,7 +33,7 @@ class DestinationService {
   Future<List<Destination>> getDestination() async {
     try {
       var endPoint = '${_baseUrl}GetAllDestinations';
-
+      developer.log('Start get destination list', name: 'destination_service');
       final response = await dio.get(endPoint,
           options: Options(headers: {
             'Content-Type': 'application/json charset=UTF-8',
@@ -40,6 +41,8 @@ class DestinationService {
 
       if (response.statusCode == 200) {
         List<dynamic> data = response.data['data'];
+        developer.log('destination_log: Received data: $data',
+            name: 'destination_service');
         List<Destination> destinations =
             data.map((item) => Destination.fromJson(item)).toList();
         return destinations;
@@ -63,6 +66,8 @@ class DestinationService {
 
       if (response.statusCode == 200) {
         dynamic data = response.data['data'];
+        developer.log('destination_log: Received data for id $id: $data',
+            name: 'destination_service');
         Destination destinationDetail = Destination.fromJson(data);
         return destinationDetail;
       } else {
@@ -73,9 +78,9 @@ class DestinationService {
       return null;
     }
   }
-  
+
   Future<List<Destination>> getDestinationsByIds(List<String> ids) async {
-    try{
+    try {
       var endPoint = '${_baseUrl}GetDestinationsByIds';
 
       final response = await dio.post(endPoint,
@@ -86,14 +91,15 @@ class DestinationService {
 
       if (response.statusCode == 200) {
         List<dynamic> data = response.data['data'];
+        developer.log('destination_log: Received data for ids $ids: $data',
+            name: 'destination_service');
         List<Destination> destinations =
-        data.map((item) => Destination.fromJson(item)).toList();
+            data.map((item) => Destination.fromJson(item)).toList();
         return destinations;
       } else {
         return [];
       }
-      
-    }catch(e) {
+    } catch (e) {
       debugPrint('Error during get destination list: $e');
       return [];
     }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:travinhgo/providers/auth_provider.dart';
 import 'package:travinhgo/sampledata/samplelist.dart';
 import 'package:travinhgo/widget/category_grid.dart';
 import 'package:travinhgo/widget/category_item.dart';

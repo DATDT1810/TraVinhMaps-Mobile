@@ -8,6 +8,8 @@ import 'dart:async';
 import 'base_map_provider.dart';
 import 'marker_map_provider.dart';
 import 'boundary_map_provider.dart';
+import '../../models/destination_types/destination_type.dart';
+import '../../models/marker/marker_type.dart' as mt;
 
 /// CategoryType defines types of POIs that can be displayed on the map
 /// with their corresponding user-friendly names and PlaceCategory IDs
@@ -18,6 +20,8 @@ class CategoryType {
   final String iconAsset; // Path to the icon asset for category buttons
   final String? selectedIconAsset;
   final bool isTintable;
+  final bool isDestinationCategory;
+  final String? destinationTypeId;
 
   const CategoryType({
     required this.name,
@@ -26,6 +30,8 @@ class CategoryType {
     required this.iconAsset,
     this.selectedIconAsset,
     this.isTintable = false,
+    this.isDestinationCategory = false,
+    this.destinationTypeId,
   });
 }
 
@@ -38,6 +44,7 @@ class CategoryMapProvider {
 
   // Callback when OCOP category is selected
   Function()? onOcopCategorySelected;
+  Function(String?)? onDestinationCategorySelected;
 
   // Category state variables
   int selectedCategoryIndex = 0;
@@ -67,8 +74,7 @@ class CategoryMapProvider {
   // Get mapController from baseMapProvider
   HereMapController? get mapController => baseMapProvider.mapController;
 
-  // Available category types with mapping between display name, PlaceCategory ID, and marker asset
-  final List<CategoryType> availableCategories = [
+  final List<CategoryType> _baseCategories = [
     CategoryType(
       name: "All",
       categoryId: "", // Empty for "All" category
@@ -150,6 +156,7 @@ class CategoryMapProvider {
       iconAsset: "assets/images/markers/supermarket.png",
     ),
   ];
+  List<CategoryType> availableCategories = [];
 
   // Categories for filter buttons - populated from availableCategories Vietnamese names
   List<String> get categories =>
@@ -161,6 +168,7 @@ class CategoryMapProvider {
     initializeSearchEngine();
     boundaryMapProvider =
         boundaryProvider ?? BoundaryMapProvider(baseMapProvider);
+    availableCategories = List.from(_baseCategories);
   }
 
   /// Initialize the search engine for category searches
@@ -357,12 +365,29 @@ class CategoryMapProvider {
     // If "All" category is selected (index 0), display all categories
     if (index == 0) {
       displayAllCategories();
+      if (onDestinationCategorySelected != null) {
+        onDestinationCategorySelected!(null);
+      }
     } else {
       // For any selected category (not "All"), show the search radius circle
       addSearchRadiusCircle();
 
       // Get the selected category
       final selectedCategory = availableCategories[index];
+
+      if (selectedCategory.isDestinationCategory) {
+        if (onDestinationCategorySelected != null) {
+          onDestinationCategorySelected!(selectedCategory.destinationTypeId);
+        }
+        return; // Early return for destination categories
+      }
+
+      // For any other category, we should hide the API-based destinations.
+      // We can do this by calling the filter with an empty string, which will result
+      // in no destinations being displayed.
+      if (onDestinationCategorySelected != null) {
+        onDestinationCategorySelected!('');
+      }
 
       // Special handling for OCOP category
       if (selectedCategory.categoryId == "ocop_products") {
@@ -385,6 +410,10 @@ class CategoryMapProvider {
   void displayAllCategories() {
     // Skip the first category which is "All"
     for (int i = 1; i < availableCategories.length; i++) {
+      final category = availableCategories[i];
+      if (category.isDestinationCategory) {
+        continue;
+      }
       // Special handling for OCOP products
       if (availableCategories[i].categoryId == "ocop_products") {
         if (onOcopCategorySelected != null) {
@@ -722,5 +751,42 @@ class CategoryMapProvider {
     clearPlaceObjects();
     markerMapProvider.clearMarkers([MarkerMapProvider.MARKER_TYPE_CATEGORY]);
     developer.log('Category resources cleaned up', name: 'CategoryMapProvider');
+  }
+
+  void addDestinationTypeCategories(List<DestinationType> destinationTypes) {
+    // Create a temporary list to hold the new categories
+    List<CategoryType> newCategories = [];
+
+    // Create CategoryType objects from destination types
+    for (final destType in destinationTypes) {
+      if (destType.name.isNotEmpty) {
+        final markerType = mt.MarkerType.fromTypeName(destType.name);
+        final iconPath = markerType.getAccessPath();
+
+        newCategories.add(CategoryType(
+          name: destType.name,
+          categoryId: destType.id, // Use the ID for unique identification
+          markerAsset: iconPath,
+          iconAsset: iconPath,
+          isDestinationCategory: true,
+          destinationTypeId: destType.id,
+        ));
+      }
+    }
+
+    // Add the new categories after the base categories, avoiding duplicates
+    final uniqueNewCategories = newCategories
+        .where((newCat) => !availableCategories
+            .any((cat) => cat.categoryId == newCat.categoryId))
+        .toList();
+
+    if (uniqueNewCategories.isNotEmpty) {
+      // Insert new categories after "All" and "OCOP"
+      availableCategories.insertAll(2, uniqueNewCategories);
+    }
+
+    developer.log(
+        'Updated available categories with ${uniqueNewCategories.length} new destination types.',
+        name: 'CategoryMapProvider');
   }
 }

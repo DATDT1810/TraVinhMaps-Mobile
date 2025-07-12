@@ -23,9 +23,15 @@ class PoiPopup extends StatelessWidget {
     final metadata = mapProvider.lastPoiMetadata;
     final String name = mapProvider.lastPoiName ??
         AppLocalizations.of(context)!.unknownLocation;
-    final double rating =
-        double.tryParse(metadata?.getString('product_rating') ?? '0.0') ?? 0.0;
-    final imagesString = metadata?.getString('product_images');
+
+    // Unified handling for rating
+    final double rating = (metadata?.getDouble('place_rating') ??
+        double.tryParse(metadata?.getString('product_rating') ?? '0.0') ??
+        0.0);
+
+    // Unified handling for images
+    final imagesString = metadata?.getString('place_images') ??
+        metadata?.getString('product_images');
     final List<String> images = imagesString != null && imagesString.isNotEmpty
         ? imagesString.split(',')
         : [];
@@ -34,7 +40,13 @@ class PoiPopup extends StatelessWidget {
 
     final bool isOcop = metadata?.getString("is_ocop_product") == "true";
     final String? ocopProductId = metadata?.getString("product_id");
+    final String? destinationId = metadata?.getString("destination_id");
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    final String category =
+        metadata?.getString("place_category") ?? l10n.unknownLocation;
+    final String coordinates =
+        '${mapProvider.lastPoiCoordinates!.latitude.toStringAsFixed(5)}, ${mapProvider.lastPoiCoordinates!.longitude.toStringAsFixed(5)}';
 
     return Positioned(
       bottom: 20,
@@ -71,34 +83,34 @@ class PoiPopup extends StatelessWidget {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            if (rating > 0) ...[
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Text(
-                                    rating.toStringAsFixed(1),
-                                    style: TextStyle(
-                                      color: colorScheme.onSurfaceVariant,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  if (isOcop)
-                                    RatingStarWidget(rating.round())
-                                  else
-                                    // Generic star rating for non-OCOP
-                                    ...List.generate(5, (index) {
-                                      return Icon(
-                                        index < rating.floor()
-                                            ? Icons.star
-                                            : Icons.star_border,
-                                        color: colorScheme.secondary,
-                                        size: 16,
-                                      );
-                                    }),
-                                ],
+                            if (rating > 0)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4.0),
+                                child: Row(
+                                  children: [
+                                    const SizedBox(width: 4),
+                                    if (isOcop)
+                                      RatingStarWidget(rating.round())
+                                    else
+                                      // Generic star rating for non-OCOP
+                                      ...List.generate(5, (index) {
+                                        if (rating >= index + 1) {
+                                          return Icon(Icons.star,
+                                              color: colorScheme.secondary,
+                                              size: 16);
+                                        } else if (rating >= index + 0.5) {
+                                          return Icon(Icons.star_half,
+                                              color: colorScheme.secondary,
+                                              size: 16);
+                                        } else {
+                                          return Icon(Icons.star_border,
+                                              color: colorScheme.secondary,
+                                              size: 16);
+                                        }
+                                      }),
+                                  ],
+                                ),
                               ),
-                            ],
                           ],
                         ),
                       ),
@@ -128,16 +140,22 @@ class PoiPopup extends StatelessWidget {
                             AppLocalizations.of(context)!.start, false, () {
                           // Could be used for turn-by-turn navigation start
                         }),
-                        const SizedBox(width: 8),
-                        _buildActionButton(context, Icons.info_outline,
-                            AppLocalizations.of(context)!.detail, false, () {
-                          if (isOcop && ocopProductId != null) {
-                            GoRouter.of(context)
-                                .push('/ocop-product-detail/$ocopProductId');
-                            mapProvider.closePoiPopup();
-                          }
-                          // Handle other detail navigations if needed
-                        }),
+                        if ((isOcop && ocopProductId != null) ||
+                            (destinationId != null)) ...[
+                          const SizedBox(width: 8),
+                          _buildActionButton(context, Icons.info_outline,
+                              AppLocalizations.of(context)!.detail, false, () {
+                            if (isOcop && ocopProductId != null) {
+                              GoRouter.of(context)
+                                  .push('/ocop-product-detail/$ocopProductId');
+                              mapProvider.closePoiPopup();
+                            } else if (destinationId != null) {
+                              GoRouter.of(context)
+                                  .push('/destination-detail/$destinationId');
+                              mapProvider.closePoiPopup();
+                            }
+                          }),
+                        ],
                         const SizedBox(width: 8),
                         _buildActionButton(context, Icons.share,
                             AppLocalizations.of(context)!.share, false, () {
@@ -191,13 +209,15 @@ class PoiPopup extends StatelessWidget {
 
                   const SizedBox(height: 16),
                   _buildInfoRow(context, Icons.location_on_outlined, address),
+                  _buildInfoRow(context, Icons.category_outlined, category),
+                  _buildInfoRow(context, Icons.map_outlined, coordinates),
                 ],
               ),
             ),
           ),
           // Close Button
           Positioned(
-            top: 8,
+            top: 11,
             right: 8,
             child: Container(
               decoration: BoxDecoration(

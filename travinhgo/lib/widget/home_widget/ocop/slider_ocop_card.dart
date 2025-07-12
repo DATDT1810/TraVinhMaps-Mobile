@@ -76,7 +76,8 @@ class SliderOcopCard extends StatelessWidget {
                   // Tên công ty với icon
                   Row(
                     children: [
-                      const Icon(Icons.storefront, size: 16, color: Colors.grey),
+                      const Icon(Icons.storefront,
+                          size: 16, color: Colors.grey),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(

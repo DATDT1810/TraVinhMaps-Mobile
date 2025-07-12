@@ -60,7 +60,7 @@ class CategoryButtons extends StatelessWidget {
           right: 0,
           child: Container(
             height: 44,
-            margin: const EdgeInsets.only(top: 10),
+            margin: const EdgeInsets.only(top: 14),
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -78,7 +78,7 @@ class CategoryButtons extends StatelessWidget {
                       localizedName,
                       style: TextStyle(
                         fontWeight:
-                            isSelected ? FontWeight.bold : FontWeight.w500,
+                            isSelected ? FontWeight.bold : FontWeight.bold,
                         color: isSelected
                             ? Theme.of(context).colorScheme.onPrimary
                             : Theme.of(context).colorScheme.onSurface,
@@ -108,7 +108,7 @@ class CategoryButtons extends StatelessWidget {
                             : Theme.of(context)
                                 .colorScheme
                                 .outline
-                                .withOpacity(0.5),
+                                .withAlpha(128),
                         width: 1,
                       ),
                     ),

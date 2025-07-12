@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'dart:developer' as developer;
 
 import '../../models/destination/destination.dart';
 import '../../providers/destination_type_provider.dart';
@@ -34,6 +35,23 @@ class _DestinationScreenState extends State<DestinationScreen> {
 
   Future<void> fetchDestinations() async {
     final data = await DestinationService().getDestination();
+
+    developer.log('tourist_destination: Retrieved ${data.length} destinations',
+        name: 'destination_screen');
+    if (data.isNotEmpty) {
+      final firstDestination = data.first;
+      developer.log(
+          'tourist_destination: First destination details - '
+          'ID: ${firstDestination.id}, '
+          'Name: ${firstDestination.name}, '
+          'Rating: ${firstDestination.avarageRating}, '
+          'Description: ${firstDestination.description}, '
+          'Address: ${firstDestination.address}, '
+          'Location: ${firstDestination.location.coordinates}, '
+          'Images: ${firstDestination.images}, '
+          'Type ID: ${firstDestination.destinationTypeId}',
+          name: 'destination_screen');
+    }
 
     for (final destination in data) {
       if (destination.images.isNotEmpty) {

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:travinhgo/models/destination_types/destination_type.dart';
+import 'dart:developer' as developer;
 
 import '../services/destination_type_service.dart';
 
@@ -13,6 +14,9 @@ class DestinationTypeProvider extends ChangeNotifier {
     try {
       List<DestinationType> destinationTypesFetch =
           await DestinationTypeService().getMarkers();
+      developer.log(
+          'destination_type_log: Retrieved ${destinationTypesFetch.length} destination types',
+          name: 'destination_type_provider');
       _destinationTypes.clear();
       _destinationTypes.addAll(destinationTypesFetch);
       notifyListeners();

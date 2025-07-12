@@ -13,8 +13,8 @@ class MarkerMapProvider {
   final BaseMapProvider baseMapProvider;
 
   // Marker size constants
-  static const double markerMinSize = 40.0;
-  static const double markerMaxSize = 120.0;
+  static const double markerMinSize = 60.0;
+  static const double markerMaxSize = 180.0;
   static const double minZoomLevel = 5.0;
   static const double maxZoomLevel = 20.0;
 
@@ -25,11 +25,13 @@ class MarkerMapProvider {
   static const String MARKER_TYPE_CATEGORY = "category";
   static const String MARKER_TYPE_DEPARTURE = "departure";
   static const String MARKER_TYPE_ROUTE_DESTINATION = "route_destination";
+  static const String MARKER_TYPE_TOURIST_DESTINATION = "tourist_destination";
 
   // Marker collections
   final List<MapMarker> destinationMarkers = [];
   final List<MapMarker> customMarkers = [];
   final List<MapMarker> categoryMarkers = [];
+  final List<MapMarker> touristDestinationMarkers = [];
   MapMarker? currentLocationMarker;
   MapMarker? currentCustomMarker;
   MapMarker? departureMarker;
@@ -111,19 +113,26 @@ class MarkerMapProvider {
     // Determine asset path based on marker type or custom asset
     if (customAsset != null) {
       assetPath = customAsset;
+      developer.log('Using custom asset path: $assetPath',
+          name: 'MarkerMapProvider');
     } else {
       switch (markerType) {
         case MARKER_TYPE_LOCATION:
           // Use a more visible location marker
           assetPath = 'assets/images/navigations/destination_point.png';
           // Override size for location marker to make it more visible
-          size = 48;
+          size = 72;
           break;
         case MARKER_TYPE_CUSTOM:
           // Use a distinctive marker for custom taps
           assetPath = 'assets/images/markers/marker.png';
           // Make custom markers slightly larger
-          size = 52;
+          size = 78;
+          break;
+        case MARKER_TYPE_TOURIST_DESTINATION:
+          // Use a default marker for tourist destinations if no custom asset provided
+          assetPath = 'assets/images/markers/marker.png';
+          size = 78; // Make tourist destination markers slightly larger
           break;
         case MARKER_TYPE_DESTINATION:
         case MARKER_TYPE_CATEGORY:
@@ -133,9 +142,21 @@ class MarkerMapProvider {
           assetPath = 'assets/images/markers/marker.png';
           break;
       }
+      developer.log('Using default asset path for $markerType: $assetPath',
+          name: 'MarkerMapProvider');
     }
 
     try {
+      // Check if the asset file exists
+      try {
+        await rootBundle.load(assetPath);
+        developer.log('Asset exists: $assetPath', name: 'MarkerMapProvider');
+      } catch (assetError) {
+        developer.log('Asset not found: $assetPath, using fallback marker',
+            name: 'MarkerMapProvider');
+        assetPath = 'assets/images/markers/marker.png';
+      }
+
       // Create marker image directly - no caching needed as HERE SDK handles this
       return MapImage.withFilePathAndWidthAndHeight(assetPath, size, size);
     } catch (e) {
@@ -208,20 +229,60 @@ class MarkerMapProvider {
   Future<void> addMarkerWithMetadata(
       GeoCoordinates coordinates, String markerType, Metadata metadata,
       {String? customAsset}) async {
-    if (mapController == null) return;
+    if (mapController == null) {
+      developer.log('Cannot add marker: Map controller is null',
+          name: 'MarkerMapProvider');
+      return;
+    }
+
+    // Validate coordinates - skip markers with invalid coordinates
+    if (coordinates.latitude < -90 ||
+        coordinates.latitude > 90 ||
+        coordinates.longitude < -180 ||
+        coordinates.longitude > 180) {
+      developer.log(
+          'Invalid coordinates for marker: lat=${coordinates.latitude}, lon=${coordinates.longitude}. Skipping marker.',
+          name: 'MarkerMapProvider');
+      return;
+    }
 
     try {
+      // Log the marker creation attempt
+      developer.log(
+          'Attempting to add $markerType marker at: ${coordinates.latitude}, ${coordinates.longitude}' +
+              (customAsset != null ? ' with custom asset: $customAsset' : ''),
+          name: 'MarkerMapProvider');
+
       // Get marker image
-      MapImage markerImage =
-          await _getMarkerImage(markerType, null, customAsset);
+      MapImage? markerImage;
+      try {
+        markerImage = await _getMarkerImage(markerType, null, customAsset);
+        developer.log('Successfully created marker image',
+            name: 'MarkerMapProvider');
+      } catch (imageError) {
+        developer.log('Failed to create marker image: $imageError',
+            name: 'MarkerMapProvider');
+        // Try with default marker as fallback
+        try {
+          markerImage = await _getMarkerImage(
+              markerType, null, 'assets/images/markers/marker.png');
+          developer.log('Using fallback marker image',
+              name: 'MarkerMapProvider');
+        } catch (fallbackError) {
+          developer.log('Even fallback marker failed: $fallbackError',
+              name: 'MarkerMapProvider');
+          return; // Cannot proceed without an image
+        }
+      }
 
       // Create new marker
       MapMarker mapMarker = MapMarker(coordinates, markerImage);
       mapMarker.drawOrder = 1000; // Ensure marker is on top
       mapMarker.metadata = metadata; // Set metadata
 
-      // Add text to marker for CATEGORY type markers
-      if (markerType == MARKER_TYPE_CATEGORY) {
+      // Add text to marker for CATEGORY type markers and TOURIST_DESTINATION markers
+      if (markerType == MARKER_TYPE_CATEGORY ||
+          markerType == MARKER_TYPE_TOURIST_DESTINATION) {
         // Get place name from metadata
         String? placeName = metadata.getString("place_name");
         if (placeName != null && placeName.isNotEmpty) {
@@ -234,11 +295,25 @@ class MarkerMapProvider {
       }
 
       // Add marker to map
-      mapController?.mapScene.addMapMarker(mapMarker);
+      try {
+        mapController?.mapScene.addMapMarker(mapMarker);
+        developer.log('Successfully added marker to map scene',
+            name: 'MarkerMapProvider');
+      } catch (addError) {
+        developer.log('Failed to add marker to map scene: $addError',
+            name: 'MarkerMapProvider');
+        return;
+      }
 
       // Store marker reference based on type
       if (markerType == MARKER_TYPE_CATEGORY) {
         categoryMarkers.add(mapMarker);
+      } else if (markerType == MARKER_TYPE_TOURIST_DESTINATION) {
+        // Store tourist destination markers
+        touristDestinationMarkers.add(mapMarker);
+        developer.log(
+            'Added tourist destination marker: ${metadata.getString("place_name") ?? "Unknown"}',
+            name: 'MarkerMapProvider');
       }
 
       // Log the coordinates where marker was placed
@@ -342,6 +417,14 @@ class MarkerMapProvider {
             routeDestinationMarker = null;
           }
           break;
+        case MARKER_TYPE_TOURIST_DESTINATION:
+          for (var marker in touristDestinationMarkers) {
+            mapController!.mapScene.removeMapMarker(marker);
+          }
+          touristDestinationMarkers.clear();
+          developer.log('Cleared all tourist destination markers',
+              name: 'MarkerMapProvider');
+          break;
       }
     }
   }
@@ -359,8 +442,24 @@ class MarkerMapProvider {
       String? city = marker.metadata?.getString("place_city");
       String? state = marker.metadata?.getString("place_state");
       String? phone = marker.metadata?.getString("place_phone");
-      String? images = marker.metadata?.getString("product_images");
-      String? rating = marker.metadata?.getString("product_rating");
+
+      // Handle both product and destination images
+      String? productImages = marker.metadata?.getString("product_images");
+      String? placeImages = marker.metadata?.getString("place_images");
+      String? images = placeImages ?? productImages;
+
+      // Handle both product and destination ratings
+      String? productRating = marker.metadata?.getString("product_rating");
+      double? placeRating = marker.metadata?.getDouble("place_rating");
+      String? rating =
+          placeRating != null ? placeRating.toString() : productRating;
+
+      // Get additional destination details
+      String? description = marker.metadata?.getString("place_description");
+      String? email = marker.metadata?.getString("place_email");
+      String? website = marker.metadata?.getString("place_website");
+      String? openingHours = marker.metadata?.getString("place_opening_hours");
+      String? destinationId = marker.metadata?.getString("destination_id");
 
       // Get coordinates directly from metadata if available, otherwise use marker coordinates
       double? lat = marker.metadata?.getDouble("place_lat");
@@ -386,9 +485,14 @@ class MarkerMapProvider {
       placeInfo['latitude'] = (lat ?? marker.coordinates.latitude).toString();
       placeInfo['longitude'] = (lon ?? marker.coordinates.longitude).toString();
 
-      // Add OCOP specific data if available
+      // Add destination/OCOP specific data if available
       if (images != null) placeInfo['images'] = images;
       if (rating != null) placeInfo['rating'] = rating;
+      if (description != null) placeInfo['description'] = description;
+      if (email != null) placeInfo['email'] = email;
+      if (website != null) placeInfo['website'] = website;
+      if (openingHours != null) placeInfo['opening_hours'] = openingHours;
+      if (destinationId != null) placeInfo['destination_id'] = destinationId;
 
       return placeInfo;
     } catch (e) {
@@ -406,7 +510,8 @@ class MarkerMapProvider {
       MARKER_TYPE_CUSTOM,
       MARKER_TYPE_CATEGORY,
       MARKER_TYPE_DEPARTURE,
-      MARKER_TYPE_ROUTE_DESTINATION
+      MARKER_TYPE_ROUTE_DESTINATION,
+      MARKER_TYPE_TOURIST_DESTINATION
     ]);
 
     developer.log('All marker resources have been cleaned up',
@@ -434,6 +539,8 @@ class MarkerMapProvider {
         categoryMarkers.remove(marker);
       } else if (destinationMarkers.contains(marker)) {
         destinationMarkers.remove(marker);
+      } else if (touristDestinationMarkers.contains(marker)) {
+        touristDestinationMarkers.remove(marker);
       }
 
       developer.log('Marker removed from map', name: 'MarkerMapProvider');

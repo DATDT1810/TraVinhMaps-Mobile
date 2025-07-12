@@ -31,6 +31,7 @@ import 'package:here_sdk/core.dart';
 import 'package:here_sdk/core.engine.dart';
 import 'package:here_sdk/core.errors.dart';
 import 'firebase_options.dart';
+import 'providers/destination_provider.dart';
 
 // Global navigator key for accessing navigation from anywhere
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -183,6 +184,7 @@ class _MyAppState extends State<MyApp> {
           ChangeNotifierProvider(create: (_) => UserProvider()),
           ChangeNotifierProvider(create: (_) => NotificationProvider()),
           ChangeNotifierProvider(create: (_) => FavoriteProvider()),
+          ChangeNotifierProvider(create: (_) => DestinationProvider()),
           ChangeNotifierProvider(create: (_) => OcopProductProvider()),
         ],
         child: Consumer<SettingProvider>(

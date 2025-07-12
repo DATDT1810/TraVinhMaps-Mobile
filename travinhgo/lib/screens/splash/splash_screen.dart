@@ -18,6 +18,7 @@ import '../../providers/interaction_provider.dart';
 import '../../providers/ocop_type_provider.dart';
 import '../../services/push_notification_service.dart';
 import '../../providers/ocop_product_provider.dart';
+import '../../providers/destination_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -162,6 +163,8 @@ class _SplashScreenState extends State<SplashScreen> {
           Provider.of<FavoriteProvider>(context, listen: false);
       final ocopProductProvider =
           Provider.of<OcopProductProvider>(context, listen: false);
+      final destinationProvider =
+          Provider.of<DestinationProvider>(context, listen: false);
       final mapProvider = Provider.of<MapProvider>(context, listen: false);
       final interactionProvider =
           Provider.of<InteractionProvider>(context, listen: false);
@@ -190,10 +193,11 @@ class _SplashScreenState extends State<SplashScreen> {
         ocopProductsFuture,
       ]);
 
-      // Initialize the OCOP map provider
-      developer.log('data_ocop: Initializing OcopMapProvider with loaded data',
+      // Initialize map sub-providers
+      developer.log('data_ocop: Initializing map sub-providers',
           name: 'SplashScreen');
-      mapProvider.initializeOcopProvider(ocopProductProvider);
+      mapProvider.initializeMapSubProviders(
+          ocopProductProvider, destinationProvider);
 
       debugPrint(
           '______________________________________________________________');

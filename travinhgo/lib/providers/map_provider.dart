@@ -27,6 +27,9 @@ import 'map/search_map_provider.dart';
 import 'map/category_map_provider.dart';
 import 'map/boundary_map_provider.dart';
 import 'map/ocop_map_provider.dart';
+import 'map/destination_map_provider.dart';
+import 'destination_provider.dart';
+import '../models/destination_types/destination_type.dart';
 
 // Re-export the TransportMode enum for backward compatibility
 export 'map/navigation_map_provider.dart' show TransportMode;
@@ -34,7 +37,7 @@ export 'map/navigation_map_provider.dart' show TransportMode;
 /// Main MapProvider that coordinates all the specialized sub-providers
 class MapProvider extends ChangeNotifier {
   // Sub-providers
-  final BaseMapProvider _baseMapProvider = BaseMapProvider();
+  late BaseMapProvider _baseMapProvider;
   late MarkerMapProvider _markerMapProvider;
   late NavigationMapProvider _navigationMapProvider;
   late LocationMapProvider _locationMapProvider;
@@ -42,6 +45,7 @@ class MapProvider extends ChangeNotifier {
   late CategoryMapProvider _categoryMapProvider;
   late BoundaryMapProvider _boundaryMapProvider;
   late OcopMapProvider _ocopMapProvider;
+  late DestinationMapProvider _destinationMapProvider;
 
   // POI data storage
   String? lastPoiName;
@@ -57,6 +61,7 @@ class MapProvider extends ChangeNotifier {
   // Constructor
   MapProvider() {
     // Initialize sub-providers in the right order
+    _baseMapProvider = BaseMapProvider();
     _markerMapProvider = MarkerMapProvider(_baseMapProvider);
     _navigationMapProvider =
         NavigationMapProvider(_baseMapProvider, _markerMapProvider);
@@ -83,16 +88,35 @@ class MapProvider extends ChangeNotifier {
         displayOcopProducts();
       }
     };
+
+    _categoryMapProvider.onDestinationCategorySelected =
+        (String? destinationTypeId) {
+      if (_destinationMapProvider != null) {
+        _destinationMapProvider.filterDestinationMarkers(destinationTypeId);
+      }
+    };
   }
 
   // Add getter for OCOP map provider
   OcopMapProvider get ocopMapProvider => _ocopMapProvider;
 
-  // Method to initialize the OCOP map provider (called after splash screen)
-  void initializeOcopProvider(OcopProductProvider ocopProductProvider) {
+  // Method to initialize the sub-providers (called after splash screen)
+  void initializeMapSubProviders(OcopProductProvider ocopProductProvider,
+      DestinationProvider destinationProvider) {
     _ocopMapProvider = OcopMapProvider(
         _baseMapProvider, _markerMapProvider, ocopProductProvider);
-    developer.log('data_ocop: OcopMapProvider initialized',
+    _destinationMapProvider = DestinationMapProvider(
+        _baseMapProvider, _markerMapProvider, destinationProvider);
+
+    // Pass destination types to the category provider
+    if (destinationProvider.destinationTypes.isNotEmpty) {
+      _categoryMapProvider
+          .addDestinationTypeCategories(destinationProvider.destinationTypes);
+      notifyListeners(); // Notify to rebuild category buttons
+    }
+
+    developer.log(
+        'data_ocop: OcopMapProvider and DestinationMapProvider initialized',
         name: 'MapProvider');
   }
 
@@ -164,16 +188,17 @@ class MapProvider extends ChangeNotifier {
       // Start preloading all category search data in background
       _preloadCategories();
 
-      // Load the "All" category by default
-      updateSelectedCategory(0);
+      // Display tourist destinations. This also fetches data if needed,
+      // which in turn updates the category buttons.
+      await displayDestinationMarkers();
 
-      // Display OCOP products if provider is initialized
-      if (_ocopMapProvider != null) {
-        developer.log(
-            'data_ocop: Displaying OCOP products on map initialization',
-            name: 'MapProvider');
-        _ocopMapProvider.displayOcopProducts();
-      }
+      // Now, display all other categories for the "All" view.
+      // This includes default POIs and OCOP products.
+      _categoryMapProvider.displayAllCategories();
+
+      // Finally, set the UI state to show that the "All" button is selected.
+      _categoryMapProvider.selectedCategoryIndex = 0;
+      _categoryMapProvider.isCategoryActive = true;
 
       notifyListeners();
     });
@@ -628,10 +653,13 @@ class MapProvider extends ChangeNotifier {
     _navigationMapProvider.cleanupNavigationResources();
     _categoryMapProvider.cleanupCategoryResources();
     _boundaryMapProvider.cleanupBoundaryResources();
-    _baseMapProvider.cleanupMapResources();
     if (_ocopMapProvider != null) {
       _ocopMapProvider.clearOcopMarkers();
     }
+    if (_destinationMapProvider != null) {
+      _destinationMapProvider.clearDestinationMarkers();
+    }
+    _baseMapProvider.cleanupMapResources();
 
     // Clear POI data
     lastPoiName = null;
@@ -651,5 +679,20 @@ class MapProvider extends ChangeNotifier {
   Future<void> updateAddresses() async {
     await _navigationMapProvider.updateAddressesFromCoordinates();
     notifyListeners();
+  }
+
+  /// Displays tourist destinations on the map
+  Future<void> displayDestinationMarkers() async {
+    if (_destinationMapProvider != null) {
+      final bool dataWasFetched =
+          await _destinationMapProvider.displayDestinationMarkers(null);
+      if (dataWasFetched &&
+          _destinationMapProvider
+              .destinationProvider.destinationTypes.isNotEmpty) {
+        _categoryMapProvider.addDestinationTypeCategories(
+            _destinationMapProvider.destinationProvider.destinationTypes);
+        notifyListeners();
+      }
+    }
   }
 }

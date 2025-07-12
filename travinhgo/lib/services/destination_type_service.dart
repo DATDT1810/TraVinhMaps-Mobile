@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:flutter/cupertino.dart';
+import 'dart:developer' as developer;
 
 import '../models/destination_types/destination_type.dart';
 import '../utils/env_config.dart';
@@ -41,6 +42,8 @@ class DestinationTypeService {
 
       if (response.statusCode == 200) {
         List<dynamic> data = response.data['data'];
+        developer.log('destination_type_log: Received data: $data',
+            name: 'destination_type_service');
         List<DestinationType> destinationTypes =
             data.map((item) => DestinationType.fromJson(item)).toList();
         return destinationTypes;
