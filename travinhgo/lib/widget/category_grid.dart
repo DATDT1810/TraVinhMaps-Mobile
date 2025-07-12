@@ -69,7 +69,7 @@ class CategoryGrid extends StatelessWidget {
             iconName: "dragon-boat",
             color: categoryColors[6],
             title: AppLocalizations.of(context)!.tipTravel,
-            index: 0,
+            index: 6,
           ),
           CategoryItem(
             iconName: "resource-allocation",

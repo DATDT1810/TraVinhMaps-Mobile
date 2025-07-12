@@ -16,6 +16,7 @@ import '../screens/destination/destination_detail_screen.dart';
 import '../screens/event_festival/event_fesftival_detail_screen.dart';
 import '../screens/favorite/favorite_screen.dart';
 import '../screens/feedback/feedback_form_screen.dart';
+import '../screens/itinerary_plan/itinerary_plan_screen.dart';
 import '../screens/local_specialty/local_specialty_detail_screen.dart';
 import '../screens/ocop_product/ocop_product_detail_screen.dart';
 import '../screens/map/map_screen.dart';
@@ -237,6 +238,11 @@ class AppRouter {
         builder: (context, state) => MessageScreen(),
       ),
       GoRoute(
+        path: '/itinerary-plan',
+        name: 'ItineraryPlan',
+        builder: (context, state) => ItineraryPlanScreen(),
+      ),
+      GoRoute(
         path: '/feedback',
         name: 'Feedback',
         builder: (context, state) => FeedbackFormScreen(),
@@ -274,10 +280,7 @@ class AppRouter {
           GoRoute(
             path: '/events',
             name: 'events',
-            builder: (context, state) => const AuthRequiredScreen(
-              message: 'Please login to use this feature',
-              child: Scaffold(body: Center(child: Text("Events Coming Soon"))),
-            ),
+            builder: (context, state) => const ItineraryPlanScreen(),
           ),
           GoRoute(
             path: '/favorites',
@@ -458,7 +461,7 @@ class AppRouter {
 
         // Check if the redirect path is one of our tab routes to ensure correct tab selection
         // This ensures we return to the correct tab in the navigation bar
-        if (redirectTo == '/events' ||
+        if (redirectTo == '/itinerary-plan' ||
             redirectTo == '/favorites' ||
             redirectTo == '/profile' ||
             redirectTo == '/map' ||

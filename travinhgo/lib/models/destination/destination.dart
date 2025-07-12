@@ -14,7 +14,7 @@ class Destination {
   final Contact? contact;
   final String tagId;
   final String? ticket;
-  final int? favoriteCount;
+  int? favoriteCount;
   final bool status;
 
   Destination(

@@ -99,38 +99,32 @@ class DestinationItem extends StatelessWidget {
                         overflow: TextOverflow.ellipsis),
                   ),
                   const SizedBox(
-                    height: 4,
+                    height: 2,
                   ),
                   Row(
                     children: [
                       Text(
                         destination.avarageRating.toStringAsFixed(1),
-                        style: const TextStyle(fontSize: 12),
+                        style: const TextStyle(fontSize: 15),
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 5),
                       ...List.generate(5, (index) {
                         double rating = destination.avarageRating;
                         if (index < rating.floor()) {
                           return Icon(Icons.star,
-                              color: colorScheme.secondary, size: 12);
+                              color: colorScheme.secondary, size: 15);
                         } else if (index < rating && rating - index >= 0.5) {
                           return Icon(Icons.star_half,
-                              color: colorScheme.secondary, size: 12);
+                              color: colorScheme.secondary, size: 15);
                         } else {
                           return Icon(Icons.star_border,
-                              color: colorScheme.secondary, size: 12);
+                              color: colorScheme.secondary, size: 15);
                         }
                       }),
-                      const SizedBox(width: 4),
-                      Text(
-                        '(53 reviewer)',
-                        style: TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.w400),
-                      )
                     ],
                   ),
                   const SizedBox(
-                    height: 10,
+                    height: 2,
                   ),
                   Row(
                     children: [

@@ -15,6 +15,7 @@ import '../../Models/Maps/top_favorite_destination.dart';
 import '../../Models/event_festival/event_and_festival.dart';
 import '../../Models/ocop/ocop_product.dart';
 import '../../main.dart';
+import '../../providers/auth_provider.dart';
 import '../../services/home_service.dart';
 import '../../utils/constants.dart';
 import '../../widget/home_widget/destination/image_slider_destination.dart';

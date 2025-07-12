@@ -38,8 +38,6 @@ class SliderDestinationCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Image
-            // Image with Favorite Icon
             ClipRRect(
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
@@ -52,6 +50,16 @@ class SliderDestinationCard extends StatelessWidget {
                     height: 120,
                     width: double.infinity,
                     fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 120,
+                        width: double.infinity,
+                        color: Colors.grey[200],
+                        alignment: Alignment.center,
+                        child: const Icon(Icons.image_not_supported,
+                            color: Colors.grey, size: 40),
+                      );
+                    },
                   ),
                 ],
               ),

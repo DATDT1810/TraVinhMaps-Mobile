@@ -11,14 +11,14 @@ class ImageSliderDestination extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 210, // chiều cao đủ để hiển thị toàn bộ card
+      height: 210,
       child: GridView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: favoriteDestinations.length,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 1, // 1 hàng
+          crossAxisCount: 1,
           mainAxisSpacing: 8,
-          childAspectRatio: 1.5, // chiều rộng / chiều cao
+          childAspectRatio: 1.5,
         ),
         itemBuilder: (context, index) {
           final destination = favoriteDestinations[index];
