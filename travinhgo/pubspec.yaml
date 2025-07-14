@@ -57,6 +57,7 @@ dependencies:
   firebase_analytics: ^11.5.0
   app_settings: ^6.1.1
   image_picker: ^1.0.7
+  flutter_rating_bar: ^4.0.1
 
   flutter_html: ^3.0.0
 

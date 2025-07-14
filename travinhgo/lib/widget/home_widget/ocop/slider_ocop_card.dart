@@ -16,7 +16,7 @@ class SliderOcopCard extends StatelessWidget {
     required this.id,
     required this.title,
     required this.imageUrl,
-    this.companyName = 'CTY TNHH TRÀ VIN...', // Tên mặc định nếu không có
+    this.companyName = 'no company was found',
   });
 
   @override
@@ -38,7 +38,6 @@ class SliderOcopCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Ảnh sản phẩm bo tròn toàn bộ
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Container(
@@ -53,6 +52,16 @@ class SliderOcopCard extends StatelessWidget {
                     height: 140,
                     width: double.infinity,
                     fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 140,
+                        width: double.infinity,
+                        color: Colors.grey[200],
+                        alignment: Alignment.center,
+                        child: const Icon(Icons.image_not_supported,
+                            color: Colors.grey, size: 40),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -62,7 +71,6 @@ class SliderOcopCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Tên sản phẩm
                   Text(
                     StringHelper.toTitleCase(title),
                     maxLines: 1,
@@ -73,10 +81,10 @@ class SliderOcopCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  // Tên công ty với icon
                   Row(
                     children: [
-                      const Icon(Icons.storefront, size: 16, color: Colors.grey),
+                      const Icon(Icons.storefront,
+                          size: 16, color: Colors.grey),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(

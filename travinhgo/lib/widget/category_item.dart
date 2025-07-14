@@ -6,6 +6,7 @@ import '../screens/destination/destination_screen.dart';
 import '../screens/event_festival/event_festival_screen.dart';
 import '../screens/local_specialty/local_specialty_screen.dart';
 import '../screens/ocop_product/ocop_product_screen.dart';
+import '../screens/tip/tip_screen.dart';
 
 class CategoryItem extends StatelessWidget {
   final String iconName;
@@ -29,7 +30,8 @@ class CategoryItem extends StatelessWidget {
       LocalSpecialtyScreen(),
       EventFestivalScreen(),
       OcopProductScreen(),
-      MessageScreen()
+      MessageScreen(),
+      TipScreen()
     ];
     return GestureDetector(
       onTap: () {

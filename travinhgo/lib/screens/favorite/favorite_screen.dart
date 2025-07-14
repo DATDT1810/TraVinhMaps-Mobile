@@ -52,14 +52,17 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
             // Tabbar
             SliverToBoxAdapter(
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
-                child: Row(
-                  children: List.generate(
-                    _tabs.length,
-                    (index) => Padding(
-                      padding: const EdgeInsets.only(right: 12.0),
-                      child: _buildTab(index),
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Row(
+                    children: List.generate(
+                      _tabs.length,
+                          (index) => Padding(
+                        padding: const EdgeInsets.only(right: 12.0),
+                        child: _buildTab(index),
+                      ),
                     ),
                   ),
                 ),

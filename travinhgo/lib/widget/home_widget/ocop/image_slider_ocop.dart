@@ -10,14 +10,14 @@ class ImageSliderOcop extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 245, // chiều cao đủ để hiển thị toàn bộ card
+      height: 245,
       child: GridView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: ocopProducts.length,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 1, // 1 hàng
+          crossAxisCount: 1,
           mainAxisSpacing: 8,
-          childAspectRatio: 1.2, // chiều rộng / chiều cao
+          childAspectRatio: 1.2,
         ),
         itemBuilder: (context, index) {
           final ocop = ocopProducts[index];
